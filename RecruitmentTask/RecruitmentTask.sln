@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepositoryInfoAddon.UI", "R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepositoryInfoAddon.Tests", "RepositoryInfoAddon\RepositoryInfoAddon.Tests\RepositoryInfoAddon.Tests.csproj", "{31E3376A-0BC3-416D-9408-ED04ADA8E164}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitDataExchange", "GitDataExchange\GitDataExchange.csproj", "{86B4D292-F600-4DFF-A19A-F3015EECF638}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{31E3376A-0BC3-416D-9408-ED04ADA8E164}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31E3376A-0BC3-416D-9408-ED04ADA8E164}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31E3376A-0BC3-416D-9408-ED04ADA8E164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86B4D292-F600-4DFF-A19A-F3015EECF638}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86B4D292-F600-4DFF-A19A-F3015EECF638}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86B4D292-F600-4DFF-A19A-F3015EECF638}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86B4D292-F600-4DFF-A19A-F3015EECF638}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
