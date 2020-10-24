@@ -16,6 +16,25 @@ namespace GitDataExchange
 
         private readonly Process _gitProcess;
 
+        public IEnumerable<CommitLog> Log
+        {
+            get
+            {
+                int skip = 0;
+                while (true)
+                {
+                    //string entry = RunCommand(String.Format("log --all --skip={0} -n1", skip++));
+                    string entry = RunCommand(String.Format("log --skip={0} -n1", skip++));
+                    if (String.IsNullOrWhiteSpace(entry))
+                    {
+                        yield break;
+                    }
+
+                    yield return new CommitLog(entry);
+                }
+            }
+        }
+
         private string RunCommand(string args)
         {
             _gitProcess.StartInfo.Arguments = args;
@@ -23,25 +42,6 @@ namespace GitDataExchange
             string output = _gitProcess.StandardOutput.ReadToEnd().Trim();
             _gitProcess.WaitForExit();
             return output;
-        }
-
-
-        public IEnumerable<string> Log
-        {
-            get
-            {
-                int skip = 0;
-                while (true)
-                {
-                    string entry = RunCommand(String.Format("log --skip={0} -n1", skip++));
-                    if (String.IsNullOrWhiteSpace(entry))
-                    {
-                        yield break;
-                    }
-
-                    yield return entry;
-                }
-            }
         }
 
     }

@@ -1,0 +1,35 @@
+﻿<?xml version="1.0"?>
+
+<!--
+<DataForm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns="http://www.enova.pl/schema/form.xsd"
+          xsi:schemaLocation="http://www.enova.pl/schema/ http://www.enova.pl/schema/form.xsd"
+        Priority="100000">
+  <Page CaptionHtml="Repozytorium" DataContext="{DataSource}">
+    <Group>
+      <Label CaptionHtml="Hello Repository !!!"/>
+    </Group>
+  </Page>
+</DataForm>
+-->
+
+
+
+<DataForm Contexts="License.All"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+          xmlns="http://www.enova.pl/schema/form.xsd">
+  <Page CaptionHtml="Autorzy" DataContext="{DataSource}">
+
+    <Include Source="{GetAuthorsUI()}"/>
+
+    <Grid EditValue="{AuthorRows}" Width="150" Height="*">
+      <Field CaptionHtml="Autor" Width="30" EditValue="{Name}" />
+      <Field CaptionHtml="Email" Width="50" EditValue="{Email}" />
+    </Grid>
+
+    <Include Source="{GetCommitGridUI()}"/>
+   
+  </Page>
+</DataForm>

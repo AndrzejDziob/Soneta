@@ -31,5 +31,13 @@ namespace GitDataExchange
             }
         }
 
+        public DateTime DateTime
+        {
+            get
+            {
+                return DateTimeParser.GetDateTime(_logText);
+            }
+        }
+
     }
 }
