@@ -16,6 +16,14 @@ namespace GitDataExchange
 
         private readonly Process _gitProcess;
 
+        public bool HasProperAddress
+        {
+            get
+            {
+                return !String.IsNullOrWhiteSpace(RunCommand("log -1"));
+            }
+        }
+
         public IEnumerable<CommitLog> Log
         {
             get
@@ -23,8 +31,8 @@ namespace GitDataExchange
                 int skip = 0;
                 while (true)
                 {
-                    //string entry = RunCommand(String.Format("log --all --skip={0} -n1", skip++));
-                    string entry = RunCommand(String.Format("log --skip={0} -n1", skip++));
+                    string entry = RunCommand(String.Format("log --all --skip={0} -n1", skip++));
+                    //string entry = RunCommand(String.Format("log --skip={0} -n1", skip++));
                     if (String.IsNullOrWhiteSpace(entry))
                     {
                         yield break;

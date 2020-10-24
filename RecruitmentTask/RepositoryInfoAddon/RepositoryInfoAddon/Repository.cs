@@ -25,6 +25,14 @@ namespace RepositoryInfoAddon
         //    set { _shouldRefreshData = value; }
         //}
 
+        public bool HasProperAddress
+        {
+            get
+            {
+                return _gitDataProvider.HasProperAddress;
+            }
+        }
+
         public List<Commit> Commits
         {
             get

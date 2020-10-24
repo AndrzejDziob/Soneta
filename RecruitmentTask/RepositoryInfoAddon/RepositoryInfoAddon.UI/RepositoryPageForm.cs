@@ -15,7 +15,9 @@ namespace RepositoryInfoAddon.UI
         {
             AuthorRows = new List<AuthorRow>();
             CommitRows = new List<CommitRow>();
-            RepoPath = @"D:\Programowanie\MySource\Soneta";
+            //RepoPath = @"D:\Programowanie\MySource\Soneta";
+            Date = DateTime.Today;
+            ShouldIncludeWeekendForStat = false;
         }
 
         private GridElement _commitGrid;
@@ -24,12 +26,9 @@ namespace RepositoryInfoAddon.UI
         [Context]
         public Session Session { get; set; }
 
-        //[Context]
-        //public Login Login { get; set; }
-
         public string RepoPath { get; set; }
 
-        public string Info { get; set; }
+        public string InvalidRepoPathInfo { get; set; }
 
         public List<AuthorRow> AuthorRows { get; set; }
 
@@ -39,35 +38,36 @@ namespace RepositoryInfoAddon.UI
 
         public AuthorRow FocusedAuthorRow { get; set; }
 
+        public DateTime Date { get; set; }
 
-        public UIElement GetAuthorsUI()
+        public bool ShouldIncludeWeekendForStat { get; set; }
+
+        public UIElement GetGitPanel()
         {
             var stack = new StackContainer();
-            var group = new GroupContainer { CaptionHtml = "Autorzy", LabelHeight = "10" };
-            var row = new RowContainer();
-            var rowCmd = new RowContainer();
+            var group = new GroupContainer { CaptionHtml = "Git", LabelHeight = "10" };
+            var gitPathRow = new RowContainer();
+            var commandRow = new RowContainer();
 
-            var fieldRepoPath = new FieldElement { CaptionHtml = "Ścieżka do repozytorium git", EditValue = "{RepoPath}", OuterWidth = "100" };
+            var repoPathField = new FieldElement { CaptionHtml = "Ścieżka do repozytorium", EditValue = "{RepoPath}", OuterWidth = "100" };
+            var invalidPathLabel = new LabelElement { CaptionHtml = "{InvalidRepoPathInfo}"};
+            var getDataCommand = new CommandElement { CaptionHtml = "Pobierz dane", MethodName = "GetGitData", Width = "20", };
+            var testCommand = new CommandElement { CaptionHtml = "Test", MethodName = "ShowMessageBox", Width = "20", };
 
-            var command = new CommandElement { CaptionHtml = "Pobierz dane", MethodName = "GetGitData", Width = "20", };
+            gitPathRow.Elements.Add(repoPathField);
+            gitPathRow.Elements.Add(invalidPathLabel);
 
-            var commandGridProperty = new CommandElement { CaptionHtml = "Test", MethodName = "ShowMessageBox", Width = "20", };
+            commandRow.Elements.Add(getDataCommand);
+            commandRow.Elements.Add(testCommand);
 
-            row.Elements.Add(fieldRepoPath);
-            rowCmd.Elements.Add(command);
-            rowCmd.Elements.Add(commandGridProperty);
-
-            group.Elements.Add(row);
-            group.Elements.Add(rowCmd);
-
-            group.Elements.Add(GetAuthorGrid());
-
+            group.Elements.Add(gitPathRow);
+            group.Elements.Add(commandRow);
+            
             stack.Elements.Add(group);
-
             return stack;
         }
 
-        public UIElement GetAuthorGrid()
+        public UIElement GetAuthorPanel()
         {
             var stack = new StackContainer();
             var group = new GroupContainer { CaptionHtml = "Autorzy", LabelHeight = "10" };
@@ -82,19 +82,50 @@ namespace RepositoryInfoAddon.UI
             return stack;
         }
 
-        public UIElement GetCommitGrid()
+        public UIElement GetCommitPanel()
         {
             var stack = new StackContainer();
-            var group = new GroupContainer { CaptionHtml = "Commit", LabelHeight = "10" };
+            var group = new GroupContainer { CaptionHtml = "Commity", LabelHeight = "10" };
 
             _commitGrid = GridElement.CreatePopulateGrid(CommitRows);
             _commitGrid.EditValue = "{CommitRows}";
             _commitGrid.FocusedValue = "{FocusedCommitRow}";
 
-            var infoField = new FieldElement { CaptionHtml = "Commit", EditValue = "{Info}", OuterWidth = "100" };
-
             group.Elements.Add(_commitGrid);
-            group.Elements.Add(infoField);
+            stack.Elements.Add(group);
+
+            return stack;
+        }
+
+        public UIElement GetCalendar()
+        {
+            var stack = new StackContainer();
+            var group = new GroupContainer { CaptionHtml = "Data", LabelHeight = "10" };
+            var row = new RowContainer();
+
+            var dateField = new FieldElement { CaptionHtml = "Data", EditValue = "{Date}", OuterWidth = "100" };
+
+            row.Elements.Add(dateField);
+
+            group.Elements.Add(row);
+
+            stack.Elements.Add(group);
+
+            return stack;
+        }
+
+        public UIElement GetCheckBox()
+        {
+            var stack = new StackContainer();
+            var group = new GroupContainer { CaptionHtml = "Bool", LabelHeight = "10" };
+            var row = new RowContainer();
+
+            var dateField = new FieldElement { CaptionHtml = "Czy uwzględniać weekendy", EditValue = "{ShouldIncludeWeekendForStat}", OuterWidth = "100" };
+
+            row.Elements.Add(dateField);
+
+            group.Elements.Add(row);
+
             stack.Elements.Add(group);
 
             return stack;
@@ -102,19 +133,39 @@ namespace RepositoryInfoAddon.UI
 
         public void GetGitData()
         {
+            var repository = new Repository(RepoPath);
+
             AuthorRows.Clear();
             CommitRows.Clear();
 
-            var repository = new Repository(RepoPath);
+            if (repository.HasProperAddress)
+            {
+                foreach (var author in repository.Authors)
+                    AuthorRows.Add(new AuthorRow { Name = author.Name, Email = author.Email });
 
-            foreach (var author in repository.Authors)
-                AuthorRows.Add(new AuthorRow { Name = author.Name, Email = author.Email });
+                foreach (var commit in repository.Commits)
+                    CommitRows.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
 
-            foreach (var commit in repository.Commits)
-                CommitRows.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
-                
+                InvalidRepoPathInfo = string.Empty;
+            }
+            else
+            {
+                //ShowMsgBoxInvalidRepoPath();
+                InvalidRepoPathInfo = "W podanej lokalizacji nie istnie repozytorium git";
+            }
+
             Session.InvokeChanged();
         }
+
+        //public void ShowMsgBoxInvalidRepoPath()
+        //{
+        //    var msgBox = new MessageBoxInformation()
+        //    {
+        //        Text = "W podanej lokalizacji nie istnie repozytorium git"
+        //    };
+
+        //    msgBox.OKHandler.Invoke();
+        //}
 
 
         public MessageBoxInformation ShowMessageBox()
