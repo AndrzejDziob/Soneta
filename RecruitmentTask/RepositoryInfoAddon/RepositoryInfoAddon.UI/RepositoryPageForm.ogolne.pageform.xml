@@ -24,12 +24,14 @@
 
     <Include Source="{GetAuthorsUI()}"/>
 
+    <!--
     <Grid EditValue="{AuthorRows}" Width="150" Height="*">
       <Field CaptionHtml="Autor" Width="30" EditValue="{Name}" />
       <Field CaptionHtml="Email" Width="50" EditValue="{Email}" />
     </Grid>
+    -->
 
-    <Include Source="{GetCommitGridUI()}"/>
+    <Include Source="{GetCommitGrid()}"/>
    
   </Page>
 </DataForm>

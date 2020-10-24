@@ -16,22 +16,10 @@ namespace RepositoryInfoAddon.UI
             AuthorRows = new List<AuthorRow>();
             CommitRows = new List<CommitRow>();
             RepoPath = @"D:\Programowanie\MySource\Soneta";
-
-            //Row = string.Empty;
-            FocusedValue = null;
-            //FocusedColumnValue = string.Empty;
-            //Generator_Info = string.Empty;
-            //SelectedValue = null;
-            //Tag = string.Empty;
-            //TagInfo = string.Empty;
-            //TagObject = string.Empty;
-            //TreeNodesValue = string.Empty;
-            //Column = string.Empty;
-            //DataContext = string.Empty;
-
         }
 
         private GridElement _commitGrid;
+        private GridElement _authorGrid;
         
         [Context]
         public Session Session { get; set; }
@@ -47,18 +35,9 @@ namespace RepositoryInfoAddon.UI
 
         public List<CommitRow> CommitRows { get; set; }
 
+        public CommitRow FocusedCommitRow { get; set; }
 
-        //public string Row { get; set; }
-        public CommitRow FocusedValue { get; set; }
-        //public string FocusedColumnValue { get; set; }
-        //public string Generator_Info { get; set; }
-        //public CommitRow SelectedValue { get; set; }
-        //public string Tag { get; set; }
-        //public string TagInfo { get; set; }
-        //public string TagObject { get; set; }
-        //public string TreeNodesValue { get; set; }
-        //public string Column { get; set; }
-        //public string DataContext { get; set; }
+        public AuthorRow FocusedAuthorRow { get; set; }
 
 
         public UIElement GetAuthorsUI()
@@ -72,8 +51,7 @@ namespace RepositoryInfoAddon.UI
 
             var command = new CommandElement { CaptionHtml = "Pobierz dane", MethodName = "GetGitData", Width = "20", };
 
-            var commandGridProperty = new CommandElement { CaptionHtml = "Test", MethodName = "ShowFieldValue", Width = "20", };
-
+            var commandGridProperty = new CommandElement { CaptionHtml = "Test", MethodName = "ShowMessageBox", Width = "20", };
 
             row.Elements.Add(fieldRepoPath);
             rowCmd.Elements.Add(command);
@@ -82,31 +60,36 @@ namespace RepositoryInfoAddon.UI
             group.Elements.Add(row);
             group.Elements.Add(rowCmd);
 
+            group.Elements.Add(GetAuthorGrid());
+
             stack.Elements.Add(group);
 
             return stack;
         }
 
-        public UIElement GetCommitGridUI()
+        public UIElement GetAuthorGrid()
+        {
+            var stack = new StackContainer();
+            var group = new GroupContainer { CaptionHtml = "Autorzy", LabelHeight = "10" };
+
+            _authorGrid = GridElement.CreatePopulateGrid(AuthorRows);
+            _authorGrid.EditValue = "{AuthorRows}";
+            _authorGrid.FocusedValue = "{FocusedAuthorRow}";
+
+            group.Elements.Add(_authorGrid);
+            stack.Elements.Add(group);
+
+            return stack;
+        }
+
+        public UIElement GetCommitGrid()
         {
             var stack = new StackContainer();
             var group = new GroupContainer { CaptionHtml = "Commit", LabelHeight = "10" };
 
             _commitGrid = GridElement.CreatePopulateGrid(CommitRows);
             _commitGrid.EditValue = "{CommitRows}";
-
-            //_commitGrid.Row = "{Row}";
-            _commitGrid.FocusedValue = "{FocusedValue}";
-            //_commitGrid.FocusedColumnValue = "{FocusedColumnValue}";
-            //_commitGrid.Generator_Info = "{Generator_Info}";
-            //_commitGrid.SelectedValue = "{SelectedValue}";
-            //_commitGrid.Tag = "{Tag}";
-            //_commitGrid.TagInfo = "{TagInfo}";
-            //_commitGrid.TagObject = "{TagObject}";
-            //_commitGrid.TreeNodesValue = "{TreeNodesValue}";
-            //_commitGrid.Column = "{Column}";
-            //_commitGrid.DataContext = "{DataContext}";
-
+            _commitGrid.FocusedValue = "{FocusedCommitRow}";
 
             var infoField = new FieldElement { CaptionHtml = "Commit", EditValue = "{Info}", OuterWidth = "100" };
 
@@ -134,11 +117,11 @@ namespace RepositoryInfoAddon.UI
         }
 
 
-        public MessageBoxInformation ShowFieldValue()
+        public MessageBoxInformation ShowMessageBox()
         {
             return new MessageBoxInformation("Aktualne wartości")
             {
-                Text = $"FocusedValue: Msg: {FocusedValue.Message}"
+                Text = $"FocusedCommitRow - Msg: {FocusedCommitRow.Message}\nFocusedAuthorRow - Autor: {FocusedAuthorRow.Name}"
             };
         }
     }
