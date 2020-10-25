@@ -25,38 +25,14 @@ namespace RepositoryInfoAddon
         //    set { _shouldRefreshData = value; }
         //}
 
-        public bool HasProperAddress
-        {
-            get
-            {
-                return _gitDataProvider.HasProperAddress;
-            }
-        }
+        public bool HasProperAddress => _gitDataProvider.HasProperAddress;
 
         public List<Commit> Commits
         {
             get
             {
                 if (_commits == null)
-                {
-                    _commits = new List<Commit>();
-                    var logs = _gitDataProvider.Log;
-
-                    foreach (var log in logs)
-                    {
-                        var commit = new Commit();
-                        var author = new Author
-                        {
-                            Name = Author.ExtractName(log.Author),
-                            Email = Author.ExtractEmail(log.Author)
-                        };
-                        commit.Author = author;
-                        commit.Message = log.CommitMsg;
-                        commit.DateTime = log.DateTime;
-
-                        _commits.Add(commit);
-                    }
-                }
+                    PrepareCommits();
                 return _commits;
             }
         }
@@ -65,14 +41,38 @@ namespace RepositoryInfoAddon
         {
             get
             {
-                if(_authors == null)
-                {
-                    _authors = new List<Author>();
-                    var authors = Commits.Select(x => x.Author);
-                    _authors = authors.GroupBy(x => x.Email).Select(y => y.First()).ToList();
-                }
+                if (_authors == null)
+                    PrepareAuthors();
                 return _authors;
             }
+        }
+
+        private void PrepareCommits()
+        {
+            _commits = new List<Commit>();
+            var logs = _gitDataProvider.Log;
+
+            foreach (var log in logs)
+            {
+                var commit = new Commit();
+                var author = new Author
+                {
+                    Name = Author.ExtractName(log.Author),
+                    Email = Author.ExtractEmail(log.Author)
+                };
+                commit.Author = author;
+                commit.Message = log.CommitMsg;
+                commit.DateTime = log.DateTime;
+
+                _commits.Add(commit);
+            }
+        }
+
+        private void PrepareAuthors()
+        {
+            _authors = new List<Author>();
+            var authors = Commits.Select(x => x.Author);
+            _authors = authors.GroupBy(x => x.Email).Select(y => y.First()).ToList();
         }
 
     }

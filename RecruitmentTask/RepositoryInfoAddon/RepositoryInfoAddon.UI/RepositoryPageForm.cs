@@ -15,13 +15,14 @@ namespace RepositoryInfoAddon.UI
         {
             AuthorRows = new List<AuthorRow>();
             CommitRows = new List<CommitRow>();
-            //RepoPath = @"D:\Programowanie\MySource\Soneta";
-            Date = DateTime.Today;
-            ShouldIncludeWeekendForStat = false;
+            CountCommandDate = DateTime.Today;
+            AverageDateFrom = DateTime.Today;
+            AverageDateTo = DateTime.Today;
+            ReadOnlyMode = true;
         }
 
-        private GridElement _commitGrid;
-        private GridElement _authorGrid;
+
+        private Repository _repository;
         
         [Context]
         public Session Session { get; set; }
@@ -38,29 +39,33 @@ namespace RepositoryInfoAddon.UI
 
         public AuthorRow FocusedAuthorRow { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTime CountCommandDate { get; set; }
 
-        public bool ShouldIncludeWeekendForStat { get; set; }
+        public int CommitCount { get; set; }
+
+        public bool ReadOnlyMode { get; set; }
+
+        public DateTime AverageDateFrom { get; set; }
+        public DateTime AverageDateTo { get; set; }
+        public double AverageCommitCount { get; set; }
+
+        public string InvalidRangeInfo { get; set; }
 
         public UIElement GetGitPanel()
         {
             var stack = new StackContainer();
             var group = new GroupContainer { CaptionHtml = "Git", LabelHeight = "10" };
+            
             var gitPathRow = new RowContainer();
-            var commandRow = new RowContainer();
-
             var repoPathField = new FieldElement { CaptionHtml = "Ścieżka do repozytorium", EditValue = "{RepoPath}", OuterWidth = "100" };
+            gitPathRow.Elements.Add(repoPathField);
+            group.Elements.Add(gitPathRow);
+
+            var commandRow = new RowContainer();
             var invalidPathLabel = new LabelElement { CaptionHtml = "{InvalidRepoPathInfo}"};
             var getDataCommand = new CommandElement { CaptionHtml = "Pobierz dane", MethodName = "GetGitData", Width = "20", };
-            var testCommand = new CommandElement { CaptionHtml = "Test", MethodName = "ShowMessageBox", Width = "20", };
-
-            gitPathRow.Elements.Add(repoPathField);
-            gitPathRow.Elements.Add(invalidPathLabel);
-
             commandRow.Elements.Add(getDataCommand);
-            commandRow.Elements.Add(testCommand);
-
-            group.Elements.Add(gitPathRow);
+            commandRow.Elements.Add(invalidPathLabel);
             group.Elements.Add(commandRow);
             
             stack.Elements.Add(group);
@@ -72,11 +77,12 @@ namespace RepositoryInfoAddon.UI
             var stack = new StackContainer();
             var group = new GroupContainer { CaptionHtml = "Autorzy", LabelHeight = "10" };
 
-            _authorGrid = GridElement.CreatePopulateGrid(AuthorRows);
-            _authorGrid.EditValue = "{AuthorRows}";
-            _authorGrid.FocusedValue = "{FocusedAuthorRow}";
+            var authorGrid = GridElement.CreatePopulateGrid(AuthorRows);
+            authorGrid.EditValue = "{AuthorRows}";
+            authorGrid.FocusedValue = "{FocusedAuthorRow}";
+            authorGrid.Width = "100";
 
-            group.Elements.Add(_authorGrid);
+            group.Elements.Add(authorGrid);
             stack.Elements.Add(group);
 
             return stack;
@@ -85,95 +91,140 @@ namespace RepositoryInfoAddon.UI
         public UIElement GetCommitPanel()
         {
             var stack = new StackContainer();
-            var group = new GroupContainer { CaptionHtml = "Commity", LabelHeight = "10" };
+            var group = new GroupContainer { CaptionHtml = "Commity wybranego autora", LabelHeight = "10", IsReadOnly = "{ReadOnlyMode}" };
 
-            _commitGrid = GridElement.CreatePopulateGrid(CommitRows);
-            _commitGrid.EditValue = "{CommitRows}";
-            _commitGrid.FocusedValue = "{FocusedCommitRow}";
+            var refreshCommandRow = new RowContainer();
+            var refreshCommand = new CommandElement { CaptionHtml = "Odśwież", MethodName = "RefreshCommitList", Width = "20", };
+            refreshCommandRow.Elements.Add(refreshCommand);
+            group.Elements.Add(refreshCommandRow);
 
-            group.Elements.Add(_commitGrid);
+            var commitGrid = GridElement.CreatePopulateGrid(CommitRows);
+            commitGrid.EditValue = "{CommitRows}";
+            commitGrid.FocusedValue = "{FocusedCommitRow}";
+            commitGrid.Width = "100";
+            group.Elements.Add(commitGrid);
+
             stack.Elements.Add(group);
-
             return stack;
         }
 
-        public UIElement GetCalendar()
+        public UIElement GetStatisticPanel()
         {
             var stack = new StackContainer();
-            var group = new GroupContainer { CaptionHtml = "Data", LabelHeight = "10" };
-            var row = new RowContainer();
+            var mainGroup = new GroupContainer { CaptionHtml = "Statystyki wybranego autora", LabelHeight = "10", IsReadOnly = "{ReadOnlyMode}" };
 
-            var dateField = new FieldElement { CaptionHtml = "Data", EditValue = "{Date}", OuterWidth = "100" };
+            var commitCountGroup = new GroupContainer { CaptionHtml = "Ilość commitów ", LabelHeight = "10" };
 
-            row.Elements.Add(dateField);
+            var countCommandRow = new RowContainer();
+            var dateField = new FieldElement { CaptionHtml = "Data", EditValue = "{CountCommandDate}", OuterWidth = "40" };
+            countCommandRow.Elements.Add(dateField);
+            commitCountGroup.Elements.Add(countCommandRow);
 
-            group.Elements.Add(row);
+            var resultCountRow = new RowContainer();
+            var commitCountField = new FieldElement { CaptionHtml = "Ilość", EditValue = "{CommitCount}", OuterWidth = "25", IsReadOnly = "true" };
+            var countCommitsCommand = new CommandElement { CaptionHtml = "Pokaż wartość", MethodName = "SetCommitCount", OuterWidth = "15" };
+            resultCountRow.Elements.Add(commitCountField);
+            resultCountRow.Elements.Add(countCommitsCommand);
+            commitCountGroup.Elements.Add(resultCountRow);
 
-            stack.Elements.Add(group);
+            mainGroup.Elements.Add(commitCountGroup);
 
-            return stack;
-        }
+            var averageCountGroup = new GroupContainer { CaptionHtml = "Średnia ilość commitów ", LabelHeight = "10" };
 
-        public UIElement GetCheckBox()
-        {
-            var stack = new StackContainer();
-            var group = new GroupContainer { CaptionHtml = "Bool", LabelHeight = "10" };
-            var row = new RowContainer();
+            var rangeRow = new RowContainer();
+            var dateFromField = new FieldElement { CaptionHtml = "Od", EditValue = "{AverageDateFrom}", OuterWidth = "40" };
+            var dateToField = new FieldElement { CaptionHtml = "Do", EditValue = "{AverageDateTo}", OuterWidth = "40" };
+            rangeRow.Elements.Add(dateFromField);
+            rangeRow.Elements.Add(dateToField);
+            averageCountGroup.Elements.Add(rangeRow);
 
-            var dateField = new FieldElement { CaptionHtml = "Czy uwzględniać weekendy", EditValue = "{ShouldIncludeWeekendForStat}", OuterWidth = "100" };
+            var averageCountRow = new RowContainer();
+            var averageCountField = new FieldElement { CaptionHtml = "Ilość", EditValue = "{AverageCommitCount}", OuterWidth = "25", IsReadOnly = "true" };
+            var averageCountCommand = new CommandElement { CaptionHtml = "Pokaż wartość", MethodName = "SetAverageCommitCount", OuterWidth = "15" };
+            var invalidRangeLabel = new LabelElement { CaptionHtml = "{InvalidRangeInfo}" };
 
-            row.Elements.Add(dateField);
+            averageCountRow.Elements.Add(averageCountField);
+            averageCountRow.Elements.Add(averageCountCommand);
+            averageCountRow.Elements.Add(invalidRangeLabel);
+            averageCountGroup.Elements.Add(averageCountRow);
 
-            group.Elements.Add(row);
+            mainGroup.Elements.Add(averageCountGroup);
 
-            stack.Elements.Add(group);
-
+            stack.Elements.Add(mainGroup);
             return stack;
         }
 
         public void GetGitData()
         {
-            var repository = new Repository(RepoPath);
+            _repository = new Repository(RepoPath);
 
             AuthorRows.Clear();
             CommitRows.Clear();
 
-            if (repository.HasProperAddress)
+            if (_repository.HasProperAddress)
             {
-                foreach (var author in repository.Authors)
+                foreach (var author in _repository.Authors)
                     AuthorRows.Add(new AuthorRow { Name = author.Name, Email = author.Email });
 
-                foreach (var commit in repository.Commits)
-                    CommitRows.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
+                if(AuthorRows.Count > 0)
+                {
+                    string email = AuthorRows[0].Email;
+                    foreach (var commit in _repository.Commits.FindAll(x=>x.Author.Email == email))
+                        CommitRows.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
+                }
 
                 InvalidRepoPathInfo = string.Empty;
+                ReadOnlyMode = false;
             }
             else
             {
-                //ShowMsgBoxInvalidRepoPath();
                 InvalidRepoPathInfo = "W podanej lokalizacji nie istnie repozytorium git";
+                ReadOnlyMode = true;
             }
 
             Session.InvokeChanged();
         }
 
-        //public void ShowMsgBoxInvalidRepoPath()
-        //{
-        //    var msgBox = new MessageBoxInformation()
-        //    {
-        //        Text = "W podanej lokalizacji nie istnie repozytorium git"
-        //    };
-
-        //    msgBox.OKHandler.Invoke();
-        //}
-
-
-        public MessageBoxInformation ShowMessageBox()
+        public void RefreshCommitList()
         {
-            return new MessageBoxInformation("Aktualne wartości")
+            CommitRows.Clear();
+            foreach (var commit in _repository.Commits)
             {
-                Text = $"FocusedCommitRow - Msg: {FocusedCommitRow.Message}\nFocusedAuthorRow - Autor: {FocusedAuthorRow.Name}"
-            };
+                if(commit.Author.Email == FocusedAuthorRow.Email)
+                    CommitRows.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
+            }
+            Session.InvokeChanged();
+        }
+
+        public void SetCommitCount()
+        {
+            var filteredCommits = _repository.Commits.FindAll(x => x.Author.Email == FocusedAuthorRow.Email && x.DateTime.Date == CountCommandDate.Date);
+            CommitCount = filteredCommits.Count;
+            Session.InvokeChanged();
+        }
+
+        public void SetAverageCommitCount()
+        {
+            var filteredCommits = _repository.Commits.FindAll(x => x.Author.Email == FocusedAuthorRow.Email &&
+                                                                    AverageDateFrom.Date <= x.DateTime.Date &&
+                                                                    x.DateTime.Date <= AverageDateTo.Date);
+
+
+            int rangeDiff = (AverageDateTo.Date - AverageDateFrom).Days;
+            if(rangeDiff >= 0)
+            {
+                int numberOfDaysInRage = rangeDiff + 1;
+                AverageCommitCount = filteredCommits.Count / (double)numberOfDaysInRage;
+
+                InvalidRangeInfo = string.Empty;
+            }
+            else
+            {
+                InvalidRangeInfo = "Nieprawidłowy zakres";
+                AverageCommitCount = 0;
+            }
+
+            Session.InvokeChanged();
         }
     }
 }

@@ -34,7 +34,8 @@
     <Include Source="{GetAuthorPanel()}"/>
 
     <Include Source="{GetCommitPanel()}"/>
-    
+
+    <Include Source="{GetStatisticPanel()}"/>
 
   </Page>
 </DataForm>
