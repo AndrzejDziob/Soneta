@@ -1,5 +1,4 @@
-﻿using RepositoryInfoAddon;
-using RepositoryInfoAddon.UI;
+﻿using RepositoryInfoAddon.UI;
 using Soneta.Business.UI;
 
 

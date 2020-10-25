@@ -12,44 +12,17 @@ namespace RepositoryInfoAddon
         public Repository(string repositoryPath, string gitPath = null)
         {
             _gitDataProvider = GitDataProviderBuilder.GetGitDataProvider(repositoryPath, gitPath);
-            //_shouldRefreshData = true;
+            Commits = new List<Commit>();
         }
 
         private GitDataProvider _gitDataProvider;
-        private List<Commit> _commits;
-        private List<Author> _authors;
-        //private bool _shouldRefreshData;
-
-        //public bool ShouldRefreshData
-        //{
-        //    set { _shouldRefreshData = value; }
-        //}
 
         public bool HasProperAddress => _gitDataProvider.HasProperAddress;
 
-        public List<Commit> Commits
+        public void FetchCommitData()
         {
-            get
-            {
-                if (_commits == null)
-                    PrepareCommits();
-                return _commits;
-            }
-        }
+            Commits.Clear();
 
-        public List<Author> Authors
-        {
-            get
-            {
-                if (_authors == null)
-                    PrepareAuthors();
-                return _authors;
-            }
-        }
-
-        private void PrepareCommits()
-        {
-            _commits = new List<Commit>();
             var logs = _gitDataProvider.Log;
 
             foreach (var log in logs)
@@ -64,16 +37,21 @@ namespace RepositoryInfoAddon
                 commit.Message = log.CommitMsg;
                 commit.DateTime = log.DateTime;
 
-                _commits.Add(commit);
+                Commits.Add(commit);
             }
         }
 
-        private void PrepareAuthors()
+        public List<Commit> Commits { get; }
+
+        public List<Author> Authors
         {
-            _authors = new List<Author>();
-            var authors = Commits.Select(x => x.Author);
-            _authors = authors.GroupBy(x => x.Email).Select(y => y.First()).ToList();
+            get
+            {
+                var authors = Commits.Select(x => x.Author);
+                return authors.GroupBy(x => x.Email).Select(y => y.First()).ToList();
+            }
         }
+
 
     }
 }

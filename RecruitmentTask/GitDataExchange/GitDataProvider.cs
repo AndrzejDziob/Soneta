@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GitDataExchange
 {
@@ -32,7 +29,6 @@ namespace GitDataExchange
                 while (true)
                 {
                     string entry = RunCommand(String.Format("log --all --skip={0} -n1", skip++));
-                    //string entry = RunCommand(String.Format("log --skip={0} -n1", skip++));
                     if (String.IsNullOrWhiteSpace(entry))
                     {
                         yield break;

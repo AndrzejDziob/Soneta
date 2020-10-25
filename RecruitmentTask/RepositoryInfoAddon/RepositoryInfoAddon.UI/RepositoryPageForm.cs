@@ -1,11 +1,7 @@
 ﻿using Soneta.Business;
-using Soneta.Business.App;
-
 using Soneta.Business.UI;
-using RepositoryInfoAddon.UI;
 using System.Collections.Generic;
 using System;
-using Soneta.BI;
 
 namespace RepositoryInfoAddon.UI
 {
@@ -15,40 +11,26 @@ namespace RepositoryInfoAddon.UI
         {
             AuthorRows = new List<AuthorRow>();
             CommitRows = new List<CommitRow>();
-            CountCommandDate = DateTime.Today;
-            AverageDateFrom = DateTime.Today;
-            AverageDateTo = DateTime.Today;
+            SetInitControlValues();
             ReadOnlyMode = true;
         }
 
+        private RepositoryPageFormLogic _logic;
 
-        private Repository _repository;
-        
         [Context]
         public Session Session { get; set; }
-
         public string RepoPath { get; set; }
-
         public string InvalidRepoPathInfo { get; set; }
-
         public List<AuthorRow> AuthorRows { get; set; }
-
         public List<CommitRow> CommitRows { get; set; }
-
         public CommitRow FocusedCommitRow { get; set; }
-
         public AuthorRow FocusedAuthorRow { get; set; }
-
         public DateTime CountCommandDate { get; set; }
-
         public int CommitCount { get; set; }
-
         public bool ReadOnlyMode { get; set; }
-
         public DateTime AverageDateFrom { get; set; }
         public DateTime AverageDateTo { get; set; }
         public double AverageCommitCount { get; set; }
-
         public string InvalidRangeInfo { get; set; }
 
         public UIElement GetGitPanel()
@@ -84,7 +66,6 @@ namespace RepositoryInfoAddon.UI
 
             group.Elements.Add(authorGrid);
             stack.Elements.Add(group);
-
             return stack;
         }
 
@@ -156,75 +137,65 @@ namespace RepositoryInfoAddon.UI
 
         public void GetGitData()
         {
-            _repository = new Repository(RepoPath);
+            _logic = new RepositoryPageFormLogic(RepoPath);
+            _logic.InitRepositoryData();
 
-            AuthorRows.Clear();
-            CommitRows.Clear();
+            SetInitControlValues();
 
-            if (_repository.HasProperAddress)
+            if (_logic.HasProperAddress)
             {
-                foreach (var author in _repository.Authors)
-                    AuthorRows.Add(new AuthorRow { Name = author.Name, Email = author.Email });
+                AuthorRows.AddRange(_logic.GetAuthors());
 
                 if(AuthorRows.Count > 0)
-                {
-                    string email = AuthorRows[0].Email;
-                    foreach (var commit in _repository.Commits.FindAll(x=>x.Author.Email == email))
-                        CommitRows.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
-                }
+                    CommitRows.AddRange(_logic.GetCommits(AuthorRows[0].Email));
 
-                InvalidRepoPathInfo = string.Empty;
                 ReadOnlyMode = false;
-            }
-            else
+            } else
             {
                 InvalidRepoPathInfo = "W podanej lokalizacji nie istnie repozytorium git";
                 ReadOnlyMode = true;
             }
-
             Session.InvokeChanged();
         }
 
         public void RefreshCommitList()
         {
-            CommitRows.Clear();
-            foreach (var commit in _repository.Commits)
-            {
-                if(commit.Author.Email == FocusedAuthorRow.Email)
-                    CommitRows.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
-            }
+            CommitRows = _logic.GetCommits(FocusedAuthorRow.Email);
             Session.InvokeChanged();
         }
 
         public void SetCommitCount()
         {
-            var filteredCommits = _repository.Commits.FindAll(x => x.Author.Email == FocusedAuthorRow.Email && x.DateTime.Date == CountCommandDate.Date);
-            CommitCount = filteredCommits.Count;
+
+            CommitCount = _logic.GetCommitCount(FocusedAuthorRow.Email, CountCommandDate.Date);
             Session.InvokeChanged();
         }
 
         public void SetAverageCommitCount()
         {
-            var filteredCommits = _repository.Commits.FindAll(x => x.Author.Email == FocusedAuthorRow.Email &&
-                                                                    AverageDateFrom.Date <= x.DateTime.Date &&
-                                                                    x.DateTime.Date <= AverageDateTo.Date);
+            bool isValidRange = false;
+            AverageCommitCount = _logic.GetAverageCommitCount(FocusedAuthorRow.Email, 
+                AverageDateFrom.Date, AverageDateTo.Date, out isValidRange);
 
-
-            int rangeDiff = (AverageDateTo.Date - AverageDateFrom).Days;
-            if(rangeDiff >= 0)
-            {
-                int numberOfDaysInRage = rangeDiff + 1;
-                AverageCommitCount = filteredCommits.Count / (double)numberOfDaysInRage;
-
+            if(isValidRange)
                 InvalidRangeInfo = string.Empty;
-            }
             else
-            {
                 InvalidRangeInfo = "Nieprawidłowy zakres";
-                AverageCommitCount = 0;
-            }
 
             Session.InvokeChanged();
+        }
+
+        private void SetInitControlValues()
+        {
+            AuthorRows.Clear();
+            CommitRows.Clear();
+            InvalidRepoPathInfo = string.Empty;
+            InvalidRangeInfo = string.Empty;
+            CountCommandDate = DateTime.Today;
+            AverageDateFrom = DateTime.Today;
+            AverageDateTo = DateTime.Today;
+            CommitCount = 0;
+            AverageCommitCount = 0;
         }
     }
 }
