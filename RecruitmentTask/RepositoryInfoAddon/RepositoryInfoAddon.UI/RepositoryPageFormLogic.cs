@@ -32,7 +32,14 @@ namespace RepositoryInfoAddon.UI
             var output = new List<CommitRow>();
             var filteredCommits = _repository.Commits.FindAll(x => x.Author.Email == email);
             foreach (var commit in filteredCommits)
-                output.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime.ToString() });
+                output.Add(new CommitRow { Message = commit.Message, DateTime = commit.DateTime });
+            return output;
+        }
+
+        public List<CommitRow> GetCommitsSortedDescByDate(string email)
+        {
+            var output = GetCommits(email);
+            output.Sort((x, y) => y.DateTime.CompareTo(x.DateTime));
             return output;
         }
 

@@ -15,6 +15,6 @@ namespace RepositoryInfoAddon.UI
         public string Message { get; set; }
 
         [Display(Name = "Data")]
-        public string DateTime { get; set; }
+        public DateTime DateTime { get; set; }
     }
 }

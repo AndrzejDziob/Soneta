@@ -17,7 +17,7 @@ namespace GitDataExchange
         {
             get
             {
-                return !String.IsNullOrWhiteSpace(RunCommand("log -1"));
+                return !string.IsNullOrWhiteSpace(RunCommand("log -1"));
             }
         }
 
@@ -28,8 +28,8 @@ namespace GitDataExchange
                 int skip = 0;
                 while (true)
                 {
-                    string entry = RunCommand(String.Format("log --all --skip={0} -n1", skip++));
-                    if (String.IsNullOrWhiteSpace(entry))
+                    string entry = RunCommand(string.Format("log --all --skip={0} -n1", skip++));
+                    if (string.IsNullOrWhiteSpace(entry))
                     {
                         yield break;
                     }

@@ -147,7 +147,7 @@ namespace RepositoryInfoAddon.UI
                 AuthorRows.AddRange(_logic.GetAuthors());
 
                 if(AuthorRows.Count > 0)
-                    CommitRows.AddRange(_logic.GetCommits(AuthorRows[0].Email));
+                    CommitRows.AddRange(_logic.GetCommitsSortedDescByDate(AuthorRows[0].Email));
 
                 ReadOnlyMode = false;
             } else
@@ -160,7 +160,7 @@ namespace RepositoryInfoAddon.UI
 
         public void RefreshCommitList()
         {
-            CommitRows = _logic.GetCommits(FocusedAuthorRow.Email);
+            CommitRows = _logic.GetCommitsSortedDescByDate(FocusedAuthorRow.Email);
             Session.InvokeChanged();
         }
 
