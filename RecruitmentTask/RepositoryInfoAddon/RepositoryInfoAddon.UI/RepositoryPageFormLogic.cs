@@ -62,6 +62,7 @@ namespace RepositoryInfoAddon.UI
             {
                 int numberOfDaysInRage = rangeDiff + 1;
                 output = filteredCommits.Count / (double)numberOfDaysInRage;
+                output = Math.Round(output, 2);
             }
 
             return output;

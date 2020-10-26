@@ -39,13 +39,13 @@ namespace RepositoryInfoAddon.UI
             var group = new GroupContainer { CaptionHtml = "Git", LabelHeight = "10" };
             
             var gitPathRow = new RowContainer();
-            var repoPathField = new FieldElement { CaptionHtml = "Ścieżka do repozytorium", EditValue = "{RepoPath}", OuterWidth = "100" };
+            var repoPathField = new FieldElement { CaptionHtml = "Ścieżka do repozytorium", EditValue = "{RepoPath}", OuterWidth = "80" };
             gitPathRow.Elements.Add(repoPathField);
             group.Elements.Add(gitPathRow);
 
             var commandRow = new RowContainer();
             var invalidPathLabel = new LabelElement { CaptionHtml = "{InvalidRepoPathInfo}"};
-            var getDataCommand = new CommandElement { CaptionHtml = "Pobierz dane", MethodName = "GetGitData", Width = "20", };
+            var getDataCommand = new CommandElement { CaptionHtml = "Pobierz dane", MethodName = "GetGitData", OuterWidth = "15" };
             commandRow.Elements.Add(getDataCommand);
             commandRow.Elements.Add(invalidPathLabel);
             group.Elements.Add(commandRow);
@@ -62,7 +62,7 @@ namespace RepositoryInfoAddon.UI
             var authorGrid = GridElement.CreatePopulateGrid(AuthorRows);
             authorGrid.EditValue = "{AuthorRows}";
             authorGrid.FocusedValue = "{FocusedAuthorRow}";
-            authorGrid.Width = "100";
+            authorGrid.OuterWidth = "80";
 
             group.Elements.Add(authorGrid);
             stack.Elements.Add(group);
@@ -75,14 +75,14 @@ namespace RepositoryInfoAddon.UI
             var group = new GroupContainer { CaptionHtml = "Commity wybranego autora", LabelHeight = "10", IsReadOnly = "{ReadOnlyMode}" };
 
             var refreshCommandRow = new RowContainer();
-            var refreshCommand = new CommandElement { CaptionHtml = "Odśwież", MethodName = "RefreshCommitList", Width = "20", };
+            var refreshCommand = new CommandElement { CaptionHtml = "Odśwież", MethodName = "RefreshCommitList", OuterWidth = "15" };
             refreshCommandRow.Elements.Add(refreshCommand);
             group.Elements.Add(refreshCommandRow);
 
             var commitGrid = GridElement.CreatePopulateGrid(CommitRows);
             commitGrid.EditValue = "{CommitRows}";
             commitGrid.FocusedValue = "{FocusedCommitRow}";
-            commitGrid.Width = "100";
+            commitGrid.OuterWidth = "80";
             group.Elements.Add(commitGrid);
 
             stack.Elements.Add(group);
@@ -112,12 +112,16 @@ namespace RepositoryInfoAddon.UI
 
             var averageCountGroup = new GroupContainer { CaptionHtml = "Średnia ilość commitów ", LabelHeight = "10" };
 
-            var rangeRow = new RowContainer();
+            var rangeFromRow = new RowContainer();
             var dateFromField = new FieldElement { CaptionHtml = "Od", EditValue = "{AverageDateFrom}", OuterWidth = "40" };
+            rangeFromRow.Elements.Add(dateFromField);
+
+            var rangeToRow = new RowContainer();
             var dateToField = new FieldElement { CaptionHtml = "Do", EditValue = "{AverageDateTo}", OuterWidth = "40" };
-            rangeRow.Elements.Add(dateFromField);
-            rangeRow.Elements.Add(dateToField);
-            averageCountGroup.Elements.Add(rangeRow);
+            rangeToRow.Elements.Add(dateToField);
+
+            averageCountGroup.Elements.Add(rangeFromRow);
+            averageCountGroup.Elements.Add(rangeToRow);
 
             var averageCountRow = new RowContainer();
             var averageCountField = new FieldElement { CaptionHtml = "Ilość", EditValue = "{AverageCommitCount}", OuterWidth = "25", IsReadOnly = "true" };
