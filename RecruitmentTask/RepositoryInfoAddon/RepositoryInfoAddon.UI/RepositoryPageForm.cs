@@ -23,7 +23,6 @@ namespace RepositoryInfoAddon.UI
         public string InvalidRepoPathInfo { get; set; }
         public List<AuthorRow> AuthorRows { get; set; }
         public List<CommitRow> CommitRows { get; set; }
-        public CommitRow FocusedCommitRow { get; set; }
         public AuthorRow FocusedAuthorRow { get; set; }
         public DateTime CountCommandDate { get; set; }
         public int CommitCount { get; set; }
@@ -177,7 +176,7 @@ namespace RepositoryInfoAddon.UI
 
         public void SetAverageCommitCount()
         {
-            bool isValidRange = false;
+            bool isValidRange;
             AverageCommitCount = _logic.GetAverageCommitCount(FocusedAuthorRow.Email, 
                 AverageDateFrom.Date, AverageDateTo.Date, out isValidRange);
 
